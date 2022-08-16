@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View } from 'react-native';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+import { ThemeProvider } from 'styled-components';
+import { ToastProvider } from 'react-native-styled-toast';
 import axios from 'axios';
 import NetInfo, {
   NetInfoState,
@@ -11,7 +13,7 @@ import { store, persistor } from '@Stores/index';
 import { ApiConfig } from '@ApiConfig/index';
 import { getItemFromStorage } from '@Utils/Storage';
 import { configureUrl } from '@Utils/Helper';
-import { AppContextProvider } from '@AppContext/index';
+import { AppContext, AppContextProvider } from '@AppContext/index';
 import { NoConnection } from '@SubComponents/index';
 import CommonStyle from '@Theme/CommonStyle';
 import Routes from '@Routes/index';
@@ -36,6 +38,8 @@ axios.interceptors.request.use(
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(true);
+
+  const { appTheme } = useContext(AppContext);
 
   useEffect(() => {
     let netInfoSubscription: NetInfoSubscription | null = null;
@@ -72,13 +76,17 @@ const App = () => {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <AppContextProvider>
-          <View style={CommonStyle.flexContainer}>
-            <Routes />
-            {(!isConnected && (
-              <NoConnection retryConnection={retryConnection} />
-            )) ||
-              null}
-          </View>
+          <ThemeProvider theme={{ appTheme }}>
+            <ToastProvider maxToasts={2} offset={0} position="BOTTOM">
+              <View style={CommonStyle.flexContainer}>
+                <Routes />
+                {(!isConnected && (
+                  <NoConnection retryConnection={retryConnection} />
+                )) ||
+                  null}
+              </View>
+            </ToastProvider>
+          </ThemeProvider>
         </AppContextProvider>
       </PersistGate>
     </Provider>
